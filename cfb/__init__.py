@@ -30,7 +30,7 @@ class ClsId(object):
 CLSID_NULL = ClsId(0)
 
 
-class Defected(object):
+class MaybeDefected(object):
     def raise_if(self, exception, *args, **kwargs):
         raise exception(*args, **kwargs)
 
@@ -44,7 +44,7 @@ class Defected(object):
         return self.raise_if(WarningDefect, *args, **kwargs)
 
 
-class Header(StringIO, Defected):
+class Header(StringIO, MaybeDefected):
     signature = 0xD0CF11E0A1B11AE1
 
     def __init__(self, data):
@@ -95,19 +95,18 @@ class Header(StringIO, Defected):
         if self.read(6) != '\0' * 6:
             self._error('Reversed field MUST be set to all zeroes.')
 
-        (self.number_of_directory_sectors, self.number_of_fat_sectors,
-         self.first_directory_sector_location,
-         self.transaction_signature_number,
-         self.mini_stream_cutoff_size, self.first_mini_fat_sector_location,
-         self.number_of_mini_fat_sectors, self.first_difat_sector_location,
-         self.number_of_difat_sectors) = unpack('<LLLLLLLLL', self.read(36))
+        (self.directory_sector_count, self.fat_sectors_count,
+         self.directory_sector_start, self.transaction_count,
+         self.cutoff_size, self.minifat_sector_start,
+         self.minifat_sector_count, self.difat_sector_start,
+         self.difat_sector_count) = unpack('<LLLLLLLLL', self.read(36))
 
-        if major == 3 and self.number_of_directory_sectors:
+        if major == 3 and self.directory_sector_count:
             self._error('If Major Version is 3, then the Number of Directory '
                         'Sectors MUST be zero. This field is not supported '
                         'for version 3 compound files.')
 
-        if self.mini_stream_cutoff_size != 0x00001000:
+        if self.cutoff_size != 0x00001000:
             self._error('This integer field MUST be set to 0x00001000. This '
                         'field specifies the maximum size of a user-defined '
                         'data stream allocated from the mini FAT and mini '
@@ -120,9 +119,10 @@ class Header(StringIO, Defected):
         self.sector_size = 2 ** sector_shift
         self.mini_sector_size = 2 ** mini_sector_shift
 
+        self.difat = self.read()
 
 
-class CfbIO(FileIO, Defected):
+class CfbIO(FileIO, MaybeDefected):
     def __init__(self, name, mode='r'):
         super(CfbIO, self).__init__(name, mode=mode)
         self.header = Header(self.read(512))
