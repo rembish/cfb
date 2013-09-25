@@ -1,6 +1,20 @@
 from io import FileIO, StringIO
 from struct import unpack
 
+ENDOFCHAIN = 0xfffffffe
+
+
+class cached_property(object):
+    def __init__(self, function):
+        self.function = function
+
+    def __get__(self, instance, owner):
+        if not instance:
+            return self
+
+        value = self.function(instance)
+        setattr(instance, self.function.func_name, value)
+        return value
 
 
 class CfbError(Exception):
@@ -45,7 +59,7 @@ class MaybeDefected(object):
 
 
 class Header(StringIO, MaybeDefected):
-    signature = 0xD0CF11E0A1B11AE1
+    signature = 0xd0cf11e0a1b11ae1
 
     def __init__(self, data):
         super(Header, self).__init__(data)
@@ -60,7 +74,7 @@ class Header(StringIO, MaybeDefected):
             self._error('Reserved and unused class ID that MUST be set to all '
                         'zeroes (CLSID_NULL).')
 
-        minor, major, byte_order, sector_shift, mini_sector_shift = \
+        minor, major, byte_order, self.sector_shift, self.mini_sector_shift = \
             unpack('<HHHHH', self.read(10))
 
         if major not in (3, 4):
@@ -77,17 +91,17 @@ class Header(StringIO, MaybeDefected):
                         'byte order mark for all integer fields, specifying '
                         'little-endian byte order.')
 
-        if sector_shift not in (0x0009, 0x000C):
+        if self.sector_shift not in (0x0009, 0x000C):
             self._error('This field MUST be set to 0x0009, or 0x000c, '
                         'depending on the Major Version field.')
-        if sector_shift == 0x0009 and major != 3:
+        if self.sector_shift == 0x0009 and major != 3:
             self._error('If Major Version is 3, then the Sector Shift MUST be '
                         '0x0009, specifying a sector size of 512 bytes.')
-        if sector_shift == 0x000C and major != 4:
+        if self.sector_shift == 0x000C and major != 4:
             self._error('If Major Version is 4, then the Sector Shift MUST be '
                         '0x000C, specifying a sector size of 4096 bytes.')
 
-        if mini_sector_shift != 0x0006:
+        if self.mini_sector_shift != 0x0006:
             self._error('This field MUST be set to 0x0006. This field '
                         'specifies the sector size of the Mini Stream as '
                         'a power of 2.')
@@ -116,13 +130,76 @@ class Header(StringIO, MaybeDefected):
                         'from the FAT.')
 
         self.version = major, minor
-        self.sector_size = 2 ** sector_shift
-        self.mini_sector_size = 2 ** mini_sector_shift
 
-        self.difat = self.read()
+        self.sector_size = 2 ** self.sector_shift
+        self.mini_sector_size = 2 ** self.mini_sector_shift
 
 
-class CfbIO(FileIO, MaybeDefected):
+class Entry(MaybeDefected):
+    def __init__(self, entry_id, reader, position):
+        pass
+
+
+class Directory(dict):
+    def __init__(self, reader):
+        super(Directory, self).__init__()
+
+
+class CfbIO(FileIO, MaybeDefected, dict):
     def __init__(self, name, mode='r'):
         super(CfbIO, self).__init__(name, mode=mode)
-        self.header = Header(self.read(512))
+        self.header = Header(self.read(76))
+
+    @cached_property
+    def root(self):
+        sector = self.header.directory_sector_start
+        position = (sector + 1) << self.header.sector_shift
+        self[0] = root = Entry(0, self, position)
+
+        return root
+
+    def __getitem__(self, entry_id):
+        if entry_id in self:
+            return super(CfbIO, self).__getitem__(entry_id)
+
+        sector_size = self.header.sector_size / 128
+        sector = self.header.directory_sector_start
+
+        current = 0
+        while (current + 1) * sector_size <= entry_id and sector != ENDOFCHAIN:
+            sector = self.next_fat(sector)
+            current += 1
+
+        position = (sector + 1) << self.header.sector_shift
+        position += (entry_id - current * sector_size) * 128
+        self[entry_id] = entry = Entry(entry_id, self, position)
+
+        return entry
+
+    def next_fat(self, current):
+        sector_size = self.header.sector_size / 4
+        block = current / sector_size
+
+        if block < 109:
+            self.seek(76 + block * 4)
+        else:
+            block -= 109
+            sector = self.header.difat_sector_start
+
+            while block >= sector_size:
+                position = (sector + 1) << self.header.sector_shift
+                self.seek(position + self.header.sector_size - 4)
+                sector = self.read_long()
+                block -= sector_size - 1
+
+            position = (sector + 1) << self.header.sector_shift
+            self.seek(position + block * 4)
+
+        fat_sector = self.read_long()
+        fat_position = (fat_sector + 1) << self.header.sector_shift
+        self.seek(fat_position + (current % sector_size) * 4)
+
+        return self.read_long()
+
+    def read_long(self):
+        return unpack('<L', self.read(4))[0]
