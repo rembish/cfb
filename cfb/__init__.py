@@ -16,7 +16,7 @@ class CfbIO(FileIO, MaybeDefected, ByteHelpers):
         super(CfbIO, self).__init__(name, mode='rb')
         MaybeDefected.__init__(self, raise_if=raise_if)
 
-        self.length = fstat(self.fileno()).st_size
+        self.size = fstat(self.fileno()).st_size
         self.header = Header(self)
 
         self.directory = Directory(self)
@@ -40,16 +40,16 @@ class CfbIO(FileIO, MaybeDefected, ByteHelpers):
             while block >= sector_size:
                 position = (sector + 1) << self.header.sector_shift
                 position += self.header.sector_size - 4
-                sector = self.read_long(position)
+                sector = self.get_long(position)
                 block -= sector_size - 1
 
             difat_position = (sector + 1) << self.header.sector_shift
-        fat_sector = self.read_long(difat_position + block * 4)
+        fat_sector = self.get_long(difat_position + block * 4)
 
         fat_position = (fat_sector + 1) << self.header.sector_shift
         fat_position += (current % sector_size) * 4
 
-        return self.read_long(fat_position)
+        return self.get_long(fat_position)
 
     def next_minifat(self, current):
         position = 0
@@ -66,9 +66,15 @@ class CfbIO(FileIO, MaybeDefected, ByteHelpers):
         minifat_position = (sector + 1) << self.header.sector_shift
         minifat_position += (current - position * sector_size) * 4
 
-        return self.read_long(minifat_position)
+        return self.get_long(minifat_position)
 
     def __getitem__(self, item):
         if isinstance(item, basestring):
             return self.directory.by_name(item)
         return self.directory[item]
+
+    def __len__(self):
+        return len(self.directory)
+
+    def __repr__(self):
+        return '<%s "%s">' % (self.__class__.__name__, self.name)

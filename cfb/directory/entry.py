@@ -73,7 +73,7 @@ class Entry(MaybeDefected, ByteHelpers):
 
         self._position = 0
         self._position_in_sector = 0
-        self._real_position = position + 128
+        self._source_position = self.source.tell()
 
         self._sector_number = self.sector_start
 
@@ -83,10 +83,8 @@ class Entry(MaybeDefected, ByteHelpers):
         self.seek(0)
 
     def __repr__(self):
-        return '<%s "%s">' % (self.__class__.__name__, self.name)
-
-    def __len__(self):
-        return self.size
+        return '<%s "%s" of %r>' % (
+            self.__class__.__name__, self.name, self.source)
 
     @cached
     def sector_size(self):
@@ -114,11 +112,9 @@ class Entry(MaybeDefected, ByteHelpers):
         return self.source.root if self._is_mini else self.source
 
     def read(self, size=None):
-        print '>>', self.source.tell(), self.tell()
+        self.source.seek(self._source_position)
         if not size or size < 0:
             size = self.size - self.tell()
-
-        print size, self.size
 
         data = ""
         while len(data) < size:
@@ -133,23 +129,21 @@ class Entry(MaybeDefected, ByteHelpers):
             data += self.stream.read(to_do)
 
             self._position += to_do
+            self._source_position = self.source.tell()
+
             if to_read >= to_end:
                 self._position_in_sector = 0
 
-                self._sector_number = \
-                    self.next_sector(self._sector_number)
+                self._sector_number = self.next_sector(self._sector_number)
                 position = (self._sector_number + int(not self._is_mini)) \
                     << self.sector_shift
                 self.stream.seek(position)
             else:
                 self._position_in_sector += to_do
 
-        return data[:size]
+        return data
 
     def seek(self, offset, whence=SEEK_SET):
-        print self.id, 'seek', offset
-        self.source.seek(self._real_position)
-
         if whence == SEEK_CUR:
             offset += self.tell()
         elif whence == SEEK_END:
@@ -171,6 +165,7 @@ class Entry(MaybeDefected, ByteHelpers):
         position += self._position_in_sector
 
         self.stream.seek(position)
+        self._source_position = self.source.tell()
         return self.tell()
 
     def tell(self):
@@ -185,3 +180,6 @@ class RootEntry(Entry):
     def child(self):
         return self.stream.directory[self.child_id] \
             if self.child_id != NOSTREAM else None
+
+    def __repr__(self):
+        return '<%s of %r>' % (self.__class__.__name__, self.source)

@@ -1,7 +1,7 @@
 from io import BytesIO
 from struct import unpack
 
-from cfb.exceptions import MaybeDefected, ErrorDefect
+from cfb.exceptions import MaybeDefected
 from cfb.helpers import Guid
 
 __all__ = ['Header']

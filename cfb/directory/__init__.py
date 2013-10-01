@@ -21,11 +21,11 @@ class Directory(dict):
             if current.left:
                 stack.append(current.left)
 
+        self[0].seek(0)
+
     def __getitem__(self, entry_id):
         if entry_id in self:
-            item = super(Directory, self).__getitem__(entry_id)
-            item.seek(0)
-            return item
+            return super(Directory, self).__getitem__(entry_id)
 
         sector_size = self.source.header.sector_size / 128
         sector = self.source.header.directory_sector_start
@@ -38,7 +38,7 @@ class Directory(dict):
         position = (sector + 1) << self.source.header.sector_shift
         position += (entry_id - current * sector_size) * 128
 
-        if position >= self.source.length:
+        if position >= self.source.size:
             raise KeyError(entry_id)
 
         self[entry_id] = entry = Entry(entry_id, self.source, position)
