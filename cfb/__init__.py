@@ -1,3 +1,4 @@
+""" Compound File Binary Format IO module (currently read-only) """
 from io import FileIO
 from os import fstat
 
@@ -12,6 +13,12 @@ __all__ = ["CfbIO"]
 
 
 class CfbIO(FileIO, MaybeDefected, ByteHelpers):
+    """
+    Creates IO (currently read-only) object for accessing internal structure
+    of Microsoft OLE files, also known as Compound File Binary Format Files
+    or Component Object Model.
+    """
+    # pylint: disable=R0904
     def __init__(self, name, raise_if=ErrorDefect):
         super(CfbIO, self).__init__(name, mode='rb')
         MaybeDefected.__init__(self, raise_if=raise_if)
@@ -24,11 +31,16 @@ class CfbIO(FileIO, MaybeDefected, ByteHelpers):
 
     @cached
     def root(self):
+        """ Property provides access to root object in CFB. """
         sector = self.header.directory_sector_start
         position = (sector + 1) << self.header.sector_shift
         return RootEntry(self, position)
 
     def next_fat(self, current):
+        """
+        Helper gives you seekable position of next FAT sector. Should not be
+        called from external code.
+        """
         sector_size = self.header.sector_size / 4
         block = current / sector_size
         difat_position = 76
@@ -52,6 +64,10 @@ class CfbIO(FileIO, MaybeDefected, ByteHelpers):
         return self.get_long(fat_position)
 
     def next_minifat(self, current):
+        """
+        Helpers provides access to next mini-FAT sector and returns it's
+        seekable position. Should not be called from external code.
+        """
         position = 0
         sector_size = self.header.sector_size / 4
         sector = self.header.minifat_sector_start
@@ -69,6 +85,7 @@ class CfbIO(FileIO, MaybeDefected, ByteHelpers):
         return self.get_long(minifat_position)
 
     def __getitem__(self, item):
+        """ You can access Directory Entries by ID (integer) or by name """
         if isinstance(item, basestring):
             return self.directory.by_name(item)
         return self.directory[item]

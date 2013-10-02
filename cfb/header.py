@@ -1,3 +1,4 @@
+""" CFB files header information """
 from io import BytesIO
 from struct import unpack
 
@@ -8,6 +9,12 @@ __all__ = ['Header']
 
 
 class Header(BytesIO, MaybeDefected):
+    """
+    Header object reads and provides information about opened CFB file.
+    Many internal structures use its attributes to access wanted sectors and
+    so on.
+    """
+    # pylint: disable=R0904, R0902
     signature = 0xd0cf11e0a1b11ae1
 
     def __init__(self, source):

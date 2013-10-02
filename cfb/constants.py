@@ -1,3 +1,4 @@
+""" Internal CFB constants """
 MAXREGSID = 0xfffffffa
 ENDOFCHAIN = 0xfffffffe
 NOSTREAM = 0xffffffff

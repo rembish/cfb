@@ -1,3 +1,4 @@
+""" Directory Entry structures """
 from os import SEEK_SET, SEEK_CUR, SEEK_END
 from re import search, UNICODE
 from struct import unpack
@@ -11,9 +12,15 @@ __all__ = ['Entry', 'RootEntry', 'SEEK_CUR', 'SEEK_END', 'SEEK_SET']
 
 
 class Entry(MaybeDefected, ByteHelpers):
+    """
+    General Entry class object. This is file-like object to access stored
+    data in any Directory Entry in CFB file.
+    """
+    # pylint: disable=R0902
     def __init__(self, entry_id, source, position):
         super(Entry, self).__init__(source.minimum_defect)
 
+        # pylint: disable=C0103
         self.id = entry_id
         self.source = source
 
@@ -88,30 +95,53 @@ class Entry(MaybeDefected, ByteHelpers):
 
     @cached
     def sector_size(self):
+        """
+        Property with current sector size. CFB file can store normal sectors
+        and smaller ones.
+        """
         header = self.source.header
         return header.mini_sector_size if self._is_mini else header.sector_size
 
     @cached
     def sector_shift(self):
+        """
+        Property with current sector size shift. Actually sector size is
+        2 ** sector shift
+        """
         header = self.source.header
         return header.mini_sector_shift if self._is_mini \
             else header.sector_shift
 
     @cached
     def left(self):
+        """
+        Entry is left sibling of current directory entry
+        """
         return self.source.directory[self.left_sibling_id] \
             if self.left_sibling_id != NOSTREAM else None
 
     @cached
     def right(self):
+        """
+        Entry is right sibling of current directory entry
+        """
         return self.source.directory[self.right_sibling_id] \
             if self.right_sibling_id != NOSTREAM else None
 
     @cached
     def stream(self):
+        """
+        From what stream must current entry read data. Entries, which are
+        stored in mini-FAT, use Root Entry as a data source, other entries
+        use normal sectors in CFB file.
+        """
         return self.source.root if self._is_mini else self.source
 
     def read(self, size=None):
+        """
+        Reads `size` bytes from current directory entry. If `size` is empty,
+        it'll read all data till entry's end.
+        """
         self.source.seek(self._source_position)
         if not size or size < 0:
             size = self.size - self.tell()
@@ -144,6 +174,12 @@ class Entry(MaybeDefected, ByteHelpers):
         return data
 
     def seek(self, offset, whence=SEEK_SET):
+        """
+        Seeks to specified `offset` position in current directory entry
+        stream. `Whence` can be SEEK_SET - from entry's start, SEEK_CUR -
+        from current position and SEEK_END - from entry's end. Constants are
+        same with same stored `os` module.
+        """
         if whence == SEEK_CUR:
             offset += self.tell()
         elif whence == SEEK_END:
@@ -169,15 +205,22 @@ class Entry(MaybeDefected, ByteHelpers):
         return self.tell()
 
     def tell(self):
+        """
+        Gets current entry's position.
+        """
         return self._position
 
 
 class RootEntry(Entry):
+    """ Root Entry is only one in opened file and only has one child. """
     def __init__(self, source, position):
         super(RootEntry, self).__init__(0, source, position)
 
     @cached
     def child(self):
+        """
+        Root entry object has only one child entry and no siblings.
+        """
         return self.stream.directory[self.child_id] \
             if self.child_id != NOSTREAM else None
 
