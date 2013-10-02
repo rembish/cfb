@@ -1,5 +1,6 @@
 """ Internal CFB constants """
-from sys import version_info
+from six import b
+from cfb.helpers import Guid
 
 MAXREGSID = 0xfffffffa
 ENDOFCHAIN = 0xfffffffe
@@ -10,4 +11,4 @@ STORAGE = 0x01
 STREAM = 0x02
 ROOT = 0x05
 
-PY3 = version_info[0] == 3
+NULL_GUID = Guid(b('\0' * 16))

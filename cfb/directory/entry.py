@@ -2,9 +2,10 @@
 from os import SEEK_SET, SEEK_CUR, SEEK_END
 from re import search, UNICODE
 from struct import unpack
+from six import b
 
 from cfb.constants import UNALLOCATED, STORAGE, STREAM, ROOT, MAXREGSID, \
-    NOSTREAM, ENDOFCHAIN, PY3
+    NOSTREAM, ENDOFCHAIN
 from cfb.exceptions import MaybeDefected
 from cfb.helpers import ByteHelpers, Guid, from_filetime, cached
 
@@ -146,7 +147,7 @@ class Entry(MaybeDefected, ByteHelpers):
         if not size or size < 0:
             size = self.size - self.tell()
 
-        data = bytes() if PY3 else ''
+        data = b('')
         while len(data) < size:
             if self.tell() > self.size:
                 break

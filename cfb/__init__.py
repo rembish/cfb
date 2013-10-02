@@ -1,8 +1,9 @@
 """ Compound File Binary Format IO module (currently read-only) """
 from io import FileIO
 from os import fstat
+from six import string_types
 
-from cfb.constants import ENDOFCHAIN, PY3
+from cfb.constants import ENDOFCHAIN
 from cfb.directory import Directory
 from cfb.directory.entry import RootEntry
 from cfb.exceptions import MaybeDefected, ErrorDefect
@@ -10,6 +11,7 @@ from cfb.header import Header
 from cfb.helpers import ByteHelpers, cached
 
 __all__ = ["CfbIO"]
+
 
 class CfbIO(FileIO, MaybeDefected, ByteHelpers):
     """
@@ -85,7 +87,7 @@ class CfbIO(FileIO, MaybeDefected, ByteHelpers):
 
     def __getitem__(self, item):
         """ You can access Directory Entries by ID (integer) or by name """
-        if isinstance(item, str if PY3 else basestring):
+        if isinstance(item, string_types):
             return self.directory.by_name(item)
         return self.directory[item]
 

@@ -79,9 +79,9 @@ class Directory(dict):
                 current = current.right
             elif len(current.name) > len(name):
                 current = current.left
-            elif cmp(current.name, name) < 0:
+            elif current.name < name:
                 current = current.right
-            elif cmp(current.name, name) > 0:
+            elif current.name > name:
                 current = current.left
             else:
                 return current

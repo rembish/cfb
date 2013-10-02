@@ -8,13 +8,14 @@ readme = open(join(here, 'README'), 'rt').read()
 
 setup(
     name='cfb',
-    version='0.8.2',
+    version='0.8.3',
     packages=find_packages(),
     url='https://github.com/rembish/cfb',
     license='BSD 2-Clause license',
     author='Alex Rembish',
     author_email='alex@rembish.org',
     description=readme,
+    install_requires=['six'],
     classifiers=(
         'Development Status :: 3 - Alpha',
         'Intended Audience :: Developers',
