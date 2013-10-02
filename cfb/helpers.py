@@ -67,13 +67,13 @@ class cached(object):
 
     def __get__(self, instance, _):
         value = self.function(instance)
-        setattr(instance, self.function.func_name, value)
+        setattr(instance, self.function.__name__, value)
         return value
 
 
 def from_filetime(time):
     """
     Convert Microsoft OLE time to datetime object
-    116444736000000000L is January 1, 1970
+    116444736000000000 is January 1, 1970
     """
-    return datetime.utcfromtimestamp((time - 116444736000000000L) / 10000000)
+    return datetime.utcfromtimestamp((time - 116444736000000000) / 10000000)

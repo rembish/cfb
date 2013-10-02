@@ -2,7 +2,7 @@
 from io import FileIO
 from os import fstat
 
-from cfb.constants import ENDOFCHAIN
+from cfb.constants import ENDOFCHAIN, PY3
 from cfb.directory import Directory
 from cfb.directory.entry import RootEntry
 from cfb.exceptions import MaybeDefected, ErrorDefect
@@ -10,7 +10,6 @@ from cfb.header import Header
 from cfb.helpers import ByteHelpers, cached
 
 __all__ = ["CfbIO"]
-
 
 class CfbIO(FileIO, MaybeDefected, ByteHelpers):
     """
@@ -41,8 +40,8 @@ class CfbIO(FileIO, MaybeDefected, ByteHelpers):
         Helper gives you seekable position of next FAT sector. Should not be
         called from external code.
         """
-        sector_size = self.header.sector_size / 4
-        block = current / sector_size
+        sector_size = self.header.sector_size // 4
+        block = current // sector_size
         difat_position = 76
 
         if block >= 109:
@@ -69,7 +68,7 @@ class CfbIO(FileIO, MaybeDefected, ByteHelpers):
         seekable position. Should not be called from external code.
         """
         position = 0
-        sector_size = self.header.sector_size / 4
+        sector_size = self.header.sector_size // 4
         sector = self.header.minifat_sector_start
 
         while sector != ENDOFCHAIN and (current + 1) * sector_size <= current:
@@ -86,7 +85,7 @@ class CfbIO(FileIO, MaybeDefected, ByteHelpers):
 
     def __getitem__(self, item):
         """ You can access Directory Entries by ID (integer) or by name """
-        if isinstance(item, basestring):
+        if isinstance(item, str if PY3 else basestring):
             return self.directory.by_name(item)
         return self.directory[item]
 

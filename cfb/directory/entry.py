@@ -4,7 +4,7 @@ from re import search, UNICODE
 from struct import unpack
 
 from cfb.constants import UNALLOCATED, STORAGE, STREAM, ROOT, MAXREGSID, \
-    NOSTREAM, ENDOFCHAIN
+    NOSTREAM, ENDOFCHAIN, PY3
 from cfb.exceptions import MaybeDefected
 from cfb.helpers import ByteHelpers, Guid, from_filetime, cached
 
@@ -146,7 +146,7 @@ class Entry(MaybeDefected, ByteHelpers):
         if not size or size < 0:
             size = self.size - self.tell()
 
-        data = ""
+        data = bytes() if PY3 else ''
         while len(data) < size:
             if self.tell() > self.size:
                 break

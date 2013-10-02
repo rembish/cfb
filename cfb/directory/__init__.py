@@ -41,7 +41,7 @@ class Directory(dict):
         if entry_id in self:
             return super(Directory, self).__getitem__(entry_id)
 
-        sector_size = self.source.header.sector_size / 128
+        sector_size = self.source.header.sector_size // 128
         sector = self.source.header.directory_sector_start
 
         current = 0

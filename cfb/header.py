@@ -1,6 +1,7 @@
 """ CFB files header information """
 from io import BytesIO
 from struct import unpack
+from cfb.constants import PY3
 
 from cfb.exceptions import MaybeDefected
 from cfb.helpers import Guid
@@ -27,7 +28,7 @@ class Header(BytesIO, MaybeDefected):
                         '0xCF, 0x11, 0xE0, 0xA1, 0xB1, 0x1A, 0xE1.')
 
         self.clsid = Guid(self.read(16))
-        if self.clsid != Guid('\0' * 16):
+        if self.clsid != Guid(bytes.fromhex('00' * 16) if PY3 else '\0' * 16):
             self._error('Reserved and unused class ID that MUST be set to all '
                         'zeroes (CLSID_NULL).')
 
