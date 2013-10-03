@@ -15,7 +15,7 @@ class ByteHelpers(object):
         search specified position in working file.
         """
         # pylint: disable=W0613, R0201
-        return NotImplemented
+        raise NotImplementedError
 
     def read(self, size=None):
         """
@@ -23,7 +23,7 @@ class ByteHelpers(object):
         read few bytes from working file.
         """
         # pylint: disable=W0613, R0201
-        return NotImplemented
+        raise NotImplementedError
 
     def get_byte(self, start):
         """
@@ -76,4 +76,4 @@ def from_filetime(time):
     Convert Microsoft OLE time to datetime object
     116444736000000000 is January 1, 1970
     """
-    return datetime.utcfromtimestamp((time - 116444736000000000) / 10000000)
+    return datetime.utcfromtimestamp((time - 116444736000000000) / 10000000.)

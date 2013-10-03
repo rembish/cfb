@@ -43,7 +43,6 @@ class MaybeDefected(object):
     # pylint: disable=R0903
 
     def __init__(self, raise_if):
-        super(MaybeDefected, self).__init__()
         self.minimum_defect = raise_if
 
     def raise_if(self, exception, message, *args, **kwargs):
@@ -51,7 +50,7 @@ class MaybeDefected(object):
         If current exception has smaller priority than minimum, subclass of
         this class only warns user, otherwise normal exception will be raised.
         """
-        if isinstance(exception, self.minimum_defect):
+        if issubclass(exception, self.minimum_defect):
             raise exception(*args, **kwargs)
         warn(message, SyntaxWarning, *args, **kwargs)
 

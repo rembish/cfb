@@ -1,0 +1,62 @@
+from datetime import datetime, tzinfo, timedelta
+from io import StringIO
+from time import time
+from unittest import TestCase
+
+from cfb.helpers import ByteHelpers, Guid, cached, from_filetime
+
+
+class ByteHelpersTestCase(TestCase):
+    def test_no_subclass(self):
+        me = ByteHelpers()
+
+        self.assertRaises(NotImplementedError, me.read)
+        self.assertRaises(NotImplementedError, me.get_byte, 0)
+        self.assertRaises(NotImplementedError, me.get_short, 1)
+        self.assertRaises(NotImplementedError, me.get_long, 10)
+
+    def test_subclass(self):
+        class Foo(StringIO, ByteHelpers):
+            pass
+
+        me = Foo(u'Compound Binary Format')
+
+        self.assertEqual(me.get_byte(0), ord('C'))
+        self.assertEqual(me.get_short(3), ord('o') * 256 + ord('p'))
+        self.assertEqual(me.get_long(9),
+                         ord('a') * 256 ** 3 + ord('n') * 256 ** 2 +
+                         ord('i') * 256 + ord('B'))
+
+
+class GuidTestCase(TestCase):
+    def test_main(self):
+        me = Guid('abcdefghijklmnop')
+        self.assertEqual(repr(me), '{61626364-6566-6768-696a-6b6c6d6e6f70}')
+
+
+class CachedTestCase(TestCase):
+    def test_main(self):
+        class Foo(object):
+            def __init__(self):
+                self.x = 0
+
+            @cached
+            def bar(self):
+                self.x += 1
+                return self.x
+
+        me = Foo()
+        self.assertEqual(me.bar, 1)
+        self.assertEqual(me.bar, 1)
+        self.assertEqual(me.x, 1)
+
+
+class FiletimeTestCase(TestCase):
+    def test_main(self):
+        self.assertEqual(from_filetime(116444736000000000),
+                         datetime(1970, 1, 1))
+
+        current = time()
+        filetime = current * 10000000 + 116444736000000000
+        self.assertEqual(from_filetime(filetime),
+                         datetime.utcfromtimestamp(current))

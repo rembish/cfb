@@ -17,6 +17,7 @@ setup(
     description='Microsoft Compound File Binary File Format (aka OLE2) IO',
     long_description=readme,
     install_requires=['six'],
+    test_suite='tests',
     classifiers=(
         'Development Status :: 3 - Alpha',
         'Intended Audience :: Developers',
