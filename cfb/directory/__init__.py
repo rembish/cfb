@@ -42,8 +42,8 @@ class Directory(dict):
         it in own dictionary. Next time it uses "cached" way.
         """
         if not isinstance(entry_id, integer_types):
-            raise ValueError("EntryId should be integer, use by_name() method"
-                             " to access Directory Entries by name.")
+            raise TypeError("EntryId should be integer, use by_name() method "
+                            "to access Directory Entries by name.")
 
         if entry_id in self:
             return super(Directory, self).__getitem__(entry_id)

@@ -37,6 +37,6 @@ class DirectoryTestCase(TestCase):
         me = owner.directory
 
         self.assertRaises(KeyError, me.__getitem__, -1)
-        self.assertRaises(ValueError, me.__getitem__, "Foo")
+        self.assertRaises(TypeError, me.__getitem__, "Foo")
         self.assertRaises(TypeError, me.by_name, 10)
         self.assertRaises(KeyError, me.by_name, u'Здравствуй, мир!')
