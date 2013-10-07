@@ -1,6 +1,6 @@
 """ CFB files header information """
 from io import BytesIO
-from struct import unpack
+from struct import unpack, error as UnpackError
 from cfb.constants import NULL_GUID
 
 from cfb.exceptions import MaybeDefected
@@ -22,7 +22,10 @@ class Header(BytesIO, MaybeDefected):
         super(Header, self).__init__(source.read(76))
         MaybeDefected.__init__(self, raise_if=source.minimum_defect)
 
-        if unpack('>Q', self.read(8))[0] != self.signature:
+        try:
+            if unpack('>Q', self.read(8))[0] != self.signature:
+                raise UnpackError("Bad signature")
+        except UnpackError:
             self._fatal('Identification signature for the compound file '
                         'structure, and MUST be set to the value 0xD0, '
                         '0xCF, 0x11, 0xE0, 0xA1, 0xB1, 0x1A, 0xE1.')
