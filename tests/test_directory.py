@@ -22,14 +22,14 @@ class DirectoryTestCase(TestCase):
         self.assertEqual(len(me), 7)
 
         self.assertRaises(KeyError, me.__getitem__, 8)
-        self.assertEquals(me.by_name("\005SummaryInformation").id, 4)
-        self.assertEquals(me.by_name("Root Entry"), me[0])
+        self.assertEqual(me.by_name("\005SummaryInformation").id, 4)
+        self.assertEqual(me.by_name("Root Entry"), me[0])
 
     def test_lazy(self):
         owner = CfbIO("data/simple.doc", lazy=True)
         me = owner.directory
 
-        self.assertEquals(me.by_name("1Table").name, "1Table")
+        self.assertEqual(me.by_name("1Table").name, "1Table")
         self.assertRaises(KeyError, me.by_name, "2Table")
 
     def test_bad_indexes(self):
