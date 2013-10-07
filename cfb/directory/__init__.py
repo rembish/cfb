@@ -1,6 +1,9 @@
 """ Internal directory structure """
+from six import integer_types
+
 from cfb.constants import ENDOFCHAIN
 from cfb.directory.entry import Entry
+from cfb.exceptions import CfbDefect
 
 __all__ = ['Directory']
 
@@ -38,6 +41,10 @@ class Directory(dict):
         not loaded yet entry, directory will seek for it in file and store
         it in own dictionary. Next time it uses "cached" way.
         """
+        if not isinstance(entry_id, integer_types):
+            raise ValueError("EntryId should be integer, use by_name() method"
+                             " to access Directory Entries by name.")
+
         if entry_id in self:
             return super(Directory, self).__getitem__(entry_id)
 
@@ -55,10 +62,15 @@ class Directory(dict):
         if position >= self.source.size:
             raise KeyError(entry_id)
 
-        self[entry_id] = entry = Entry(entry_id, self.source, position)
-        self._name_cache[entry.name] = entry_id
+        try:
+            instance = Entry(entry_id, self.source, position)
+        except CfbDefect:
+            raise KeyError(entry_id)
 
-        return entry
+        self[entry_id] = instance
+        self._name_cache[instance.name] = entry_id
+
+        return instance
 
     def by_name(self, name):
         """

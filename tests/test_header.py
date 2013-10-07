@@ -25,7 +25,7 @@ class SourceMock(BytesIO, MaybeDefected):
 
 
 class MyTestCase(TestCase):
-    def test_errors(self):
+    def test_main(self):
         source = SourceMock(raise_if=WarningDefect)
 
         self.assertRaises(FatalDefect, Header, source)

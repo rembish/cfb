@@ -20,7 +20,7 @@ class CfbIO(FileIO, MaybeDefected, ByteHelpers):
     or Component Object Model.
     """
     # pylint: disable=R0904
-    def __init__(self, name, raise_if=ErrorDefect):
+    def __init__(self, name, raise_if=ErrorDefect, lazy=False):
         super(CfbIO, self).__init__(name, mode='rb')
         MaybeDefected.__init__(self, raise_if=raise_if)
 
@@ -28,7 +28,8 @@ class CfbIO(FileIO, MaybeDefected, ByteHelpers):
         self.header = Header(self)
 
         self.directory = Directory(self)
-        self.directory.read()
+        if not lazy:
+            self.directory.read()
 
     @cached
     def root(self):
