@@ -1,7 +1,8 @@
-from io import BytesIO
+from io import BytesIO, SEEK_END, SEEK_SET
 from unittest import TestCase
 
-from cfb.exceptions import MaybeDefected, ErrorDefect, FatalDefect
+from cfb.exceptions import MaybeDefected, ErrorDefect, FatalDefect, \
+    WarningDefect
 from cfb.header import Header
 
 
@@ -17,18 +18,54 @@ class SourceMock(BytesIO, MaybeDefected):
         return self
 
     def erase(self, till=0):
-        self.seek(till)
-        self.truncate(0)
+        self.seek(till, SEEK_END if till < 0 else SEEK_SET)
+        self.truncate(self.tell())
 
         return self
 
 
 class MyTestCase(TestCase):
     def test_errors(self):
-        source = SourceMock()
+        source = SourceMock(raise_if=WarningDefect)
 
         self.assertRaises(FatalDefect, Header, source)
         self.assertRaises(FatalDefect, Header, source.append("12345678"))
 
+        self.assertRaises(
+            ErrorDefect, Header,
+            source.erase().append("\xd0\xcf\x11\xe0\xa1\xb1\x1a\xe1"))
+        self.assertRaises(ErrorDefect, Header, source.append('1' * 16))
+        self.assertRaises(FatalDefect, Header,
+                          source.erase(-16).append('\0' * 16))
+
         self.assertRaises(ErrorDefect, Header,
-                          source.erase().append(0xd0cf11e0a1b11ae1))
+                          source.append("1234567890"))
+        self.assertRaises(WarningDefect, Header,
+                          source.erase(-10).append("12\x04\x00345678"))
+        self.assertRaises(FatalDefect, Header,
+                          source.erase(-10).append("\x3e\x00\x04\x00123456"))
+        self.assertRaises(ErrorDefect, Header,
+                          source.erase(-6).append("\xfe\xff1234"))
+        self.assertRaises(ErrorDefect, Header,
+                          source.erase(-4).append("\x09\x0012"))
+        self.assertRaises(
+            ErrorDefect, Header,
+            source.erase(-8).append("\x03\x00\xfe\xff\x0c\x0012"))
+        self.assertRaises(ErrorDefect, Header,
+                          source.erase(-4).append("\x09\x0012"))
+
+        self.assertRaises(ErrorDefect, Header,
+                          source.erase(-2).append("\x06\x00"))
+        self.assertRaises(ErrorDefect, Header, source.append("1" * 6))
+
+        self.assertRaises(FatalDefect, Header,
+                          source.erase(-6).append('\0' * 6))
+
+        self.assertRaises(ErrorDefect, Header,
+                          source.append("1234" + '\0' * 32))
+        self.assertRaises(ErrorDefect, Header,
+                          source.erase(-36).append('\0' * 36))
+
+        self.assertEqual(
+            Header(source.erase(-20).append('\x00\x10' + '\0' * 18)).version,
+            (3, 0x3e))
