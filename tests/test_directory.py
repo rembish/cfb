@@ -7,11 +7,13 @@ from cfb import CfbIO
 
 
 class DirectoryTestCase(TestCase):
+    filename = "data/simple.doc"
+
     def setUp(self):
         simplefilter("ignore")
 
     def test_main(self):
-        owner = CfbIO("data/simple.doc")
+        owner = CfbIO(self.filename)
         me = owner.directory
 
         self.assertEqual(me.source, owner)
@@ -26,14 +28,14 @@ class DirectoryTestCase(TestCase):
         self.assertEqual(me.by_name("Root Entry"), me[0])
 
     def test_lazy(self):
-        owner = CfbIO("data/simple.doc", lazy=True)
+        owner = CfbIO(self.filename, lazy=True)
         me = owner.directory
 
         self.assertEqual(me.by_name("1Table").name, "1Table")
         self.assertRaises(KeyError, me.by_name, "2Table")
 
     def test_bad_indexes(self):
-        owner = CfbIO("data/simple.doc", lazy=True)
+        owner = CfbIO(self.filename, lazy=True)
         me = owner.directory
 
         self.assertRaises(KeyError, me.__getitem__, -1)
