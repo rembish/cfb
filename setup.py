@@ -14,7 +14,7 @@ setup(
     license='BSD 2-Clause license',
     author='Alex Rembish',
     author_email='alex@rembish.org',
-    description='Microsoft Compound File Binary File Format (aka OLE2) IO',
+    description='Microsoft Compound File Binary File Format IO',
     long_description=readme,
     install_requires=['six'],
     test_suite='tests',

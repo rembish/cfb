@@ -16,8 +16,7 @@ __all__ = ["CfbIO"]
 class CfbIO(FileIO, MaybeDefected, ByteHelpers):
     """
     Creates IO (currently read-only) object for accessing internal structure
-    of Microsoft OLE files, also known as Compound File Binary Format Files
-    or Component Object Model.
+    of Microsoft Compound File Binary Format Files.
     """
     # pylint: disable=R0904
     def __init__(self, name, raise_if=ErrorDefect, lazy=False):

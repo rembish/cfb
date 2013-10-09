@@ -6,19 +6,19 @@ CfbIO |TravisLink|_
 .. _TravisLink: https://travis-ci.org/rembish/cfb
 
 CfbIO provides access to internal structure of Microsoft Compound File Binary
-File Format, also known as OLE2 or COM.
+File Format.
 
-Module operates with input file like standard IO module in Python. You can seek,
-read and maybe one day write those files, like all other file-like objects. Also
-module grants access to internal directory structure containing Entries, which
-are also standard readable/seekable objects.
+Module operates with input file like standard IO module in Python. You can
+seek, read and maybe one day write those files, like all other file-like
+objects. Also module grants access to internal directory structure containing
+Entries, which are also standard readable/seekable objects.
 
 So, your work with this module is very simple::
 
     from cfb import CfbIO
     from cfb.directory.entry import SEEK_END
 
-    doc = CfbIO("something.doc")
+    doc = CfbIO("tests/data/simple.doc")
 
     root = doc.root
     print(root.read())  # Read whole root entry buffer
