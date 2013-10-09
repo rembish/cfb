@@ -1,5 +1,5 @@
-from io import BytesIO
 from os import SEEK_END, SEEK_SET
+from six import b, BytesIO
 from unittest import TestCase
 
 from cfb.exceptions import MaybeDefected, ErrorDefect, FatalDefect, \
@@ -9,11 +9,11 @@ from cfb.header import Header
 
 class SourceMock(BytesIO, MaybeDefected):
     def __init__(self, value="", raise_if=ErrorDefect):
-        super(SourceMock, self).__init__(value)
+        super(SourceMock, self).__init__(b(value))
         MaybeDefected.__init__(self, raise_if=raise_if)
 
     def append(self, data):
-        self.write(data)
+        self.write(b(data))
         self.seek(0)
 
         return self
@@ -25,7 +25,7 @@ class SourceMock(BytesIO, MaybeDefected):
         return self
 
 
-class MyTestCase(TestCase):
+class HeaderTestCase(TestCase):
     def test_main(self):
         source = SourceMock(raise_if=WarningDefect)
 

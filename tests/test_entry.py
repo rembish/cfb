@@ -1,5 +1,5 @@
 from collections import namedtuple
-from io import BytesIO
+from six import BytesIO, b
 from unittest import TestCase
 from warnings import simplefilter
 
@@ -12,6 +12,8 @@ from cfb.exceptions import MaybeDefected, WarningDefect, FatalDefect, \
 
 class MockCfbIO(BytesIO, MaybeDefected):
     def __init__(self, value, raise_if=WarningDefect):
+        value = b(value)
+
         super(MockCfbIO, self).__init__(value)
         MaybeDefected.__init__(self, raise_if=raise_if)
 
@@ -28,9 +30,11 @@ class MockCfbIO(BytesIO, MaybeDefected):
         self.current = value
 
     def replace(self, start, replacement):
+        replacement = b(replacement)
         position = self.tell()
         self.current = self.current[:start] + replacement + \
                        self.current[start + len(replacement):]
+
         self.seek(0)
         self.truncate(0)
         self.write(self.current)

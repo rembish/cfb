@@ -31,6 +31,9 @@ class CfbIO(FileIO, MaybeDefected, ByteHelpers):
         if not lazy:
             self.directory.read()
 
+    def __del__(self):
+        self.close()
+
     @cached
     def root(self):
         """ Property provides access to root object in CFB. """

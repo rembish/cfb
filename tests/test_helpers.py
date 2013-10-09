@@ -1,5 +1,5 @@
 from datetime import datetime
-from io import StringIO
+from six import b, BytesIO
 from time import time
 from unittest import TestCase
 
@@ -16,10 +16,10 @@ class ByteHelpersTestCase(TestCase):
         self.assertRaises(NotImplementedError, me.get_long, 10)
 
     def test_subclass(self):
-        class Foo(StringIO, ByteHelpers):
+        class Foo(BytesIO, ByteHelpers):
             pass
 
-        me = Foo(u'Compound Binary Format')
+        me = Foo(b('Compound Binary Format'))
 
         self.assertEqual(me.get_byte(0), ord('C'))
         self.assertEqual(me.get_short(3), ord('o') * 256 + ord('p'))

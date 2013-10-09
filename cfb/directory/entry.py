@@ -97,6 +97,9 @@ class Entry(MaybeDefected, ByteHelpers):
         except UnpackError:
             self._fatal("Bad Directory Entry header")
 
+    def __del__(self):
+        del self.source
+
     def __repr__(self):
         return '<%s[%d] "%s" of %r>' % (
             self.__class__.__name__, self.id, self.name, self.source)

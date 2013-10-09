@@ -1,5 +1,5 @@
 """ CFB files header information """
-from io import BytesIO
+from six import BytesIO, b
 from struct import unpack, error as UnpackError
 from cfb.constants import GUID_NULL
 
@@ -72,7 +72,7 @@ class Header(BytesIO, MaybeDefected):
                             'specifies the sector size of the Mini Stream as '
                             'a power of 2.')
 
-            if self.read(6) != '\0' * 6:
+            if self.read(6) != b('\0' * 6):
                 self._error('Reversed field MUST be set to all zeroes.')
 
             # TODO Add additional attributes checks

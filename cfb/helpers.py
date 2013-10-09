@@ -1,6 +1,7 @@
 """ Few helper routines and classes for internal only uses """
 from datetime import datetime
 from os import SEEK_SET
+from six import b, binary_type
 from struct import unpack
 from uuid import UUID
 
@@ -53,10 +54,14 @@ class Guid(UUID):
     repr format.
     """
     def __init__(self, value):
-        super(Guid, self).__init__(bytes=value)
+        super(Guid, self).__init__(
+            bytes=value if isinstance(value, binary_type) else b(value))
 
     def __repr__(self):
         return '{%s}' % self
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.bytes == other.bytes
 
 
 class cached(object):

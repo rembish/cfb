@@ -19,6 +19,9 @@ class Directory(dict):
         self.source = source
         self[0] = self.source.root
 
+    def __del__(self):
+        del self.source
+
     def read(self):
         """
         This module is lazy-loaded by default. You can read all internal
