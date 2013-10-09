@@ -142,3 +142,10 @@ class EntryTestCase(TestCase):
         self.assertTrue(me.right is None)
         self.assertEqual(me.child, io[1])
 
+    def test_io(self):
+        io = CfbIO(self.filename, lazy=False)
+        me = io["WordDocument"]
+
+        self.assertEqual(me.tell(), 0)
+        self.assertEqual(me.seek(32), 32)
+        self.assertEqual(me.read(23), "Microsoft Word-Document")
