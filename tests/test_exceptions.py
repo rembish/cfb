@@ -1,5 +1,5 @@
 from unittest import TestCase
-from warnings import catch_warnings
+from warnings import simplefilter
 from cfb.exceptions import MaybeDefected, ErrorDefect, FatalDefect
 
 
@@ -10,8 +10,5 @@ class MaybeDefectedTestCase(TestCase):
         self.assertRaises(FatalDefect, me._fatal, "Fatal!")
         self.assertRaises(ErrorDefect, me._error, "Error!")
 
-        with catch_warnings(record=True) as w:
-            me._warning("Warning.")
-
-            self.assertEqual(len(w), 1)
-            self.assertEqual(w[-1].category, SyntaxWarning)
+        simplefilter("error")
+        self.assertRaises(SyntaxWarning, me._warning, "Warning!")
