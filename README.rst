@@ -2,6 +2,8 @@
 CfbIO
 =====
 
+.. image:: https://api.travis-ci.org/rembish/cfb.png
+
 CfbIO provides access to internal structure of Microsoft Compound File Binary
 File Format, also known as OLE2 or COM.
 
