@@ -1,7 +1,7 @@
 """ Directory Entry structures """
 from os import SEEK_SET, SEEK_CUR, SEEK_END
 from re import search, UNICODE
-from struct import unpack
+from struct import unpack, error as UnpackError
 from six import b
 
 from cfb.constants import UNALLOCATED, STORAGE, STREAM, ROOT, MAXREGSID, \
@@ -26,73 +26,80 @@ class Entry(MaybeDefected, ByteHelpers):
         self.source = source
 
         self.source.seek(position)
-        (name, name_length, self.type, self.color, self.left_sibling_id,
-         self.right_sibling_id, self.child_id, clsid, self.state_bits,
-         creation_time, modified_time, self.sector_start, self.size) \
-            = unpack('<64sHBBLLL16sLQQLQ', self.source.read(128))
+        try:
+            (name, name_length, self.type, self.color, self.left_sibling_id,
+             self.right_sibling_id, self.child_id, clsid, self.state_bits,
+             creation_time, modified_time, self.sector_start, self.size) \
+                = unpack('<64sHBBLLL16sLQQLQ', self.source.read(128))
 
-        self.name = name[:name_length].decode("utf-16").rstrip("\0")
+            try:
+                self.name = name[:name_length].decode("utf-16").rstrip("\0")
+            except UnicodeDecodeError:
+                self._error("Bad Directory Entry name, maybe truncated.")
 
-        if search(r'[/\\:!]', self.name, UNICODE):
-            self._warning("The following characters are illegal and MUST NOT "
-                          "be part of the name: '/', '\', ':', '!'.")
+            if search(r'[/\\:!]', self.name, UNICODE):
+                self._warning("The following characters are illegal and MUST "
+                              "NOT be part of the name: '/', '\', ':', '!'.")
 
-        if self.type not in (UNALLOCATED, STORAGE, STREAM, ROOT):
-            self._error("This field MUST be 0x00, 0x01, 0x02, or 0x05, "
-                        "depending on the actual type of object. All other "
-                        "values are not valid.")
-        elif self.type == UNALLOCATED:
-            self._error("Can't create Directory Entry for unallocated place.")
+            if self.type not in (UNALLOCATED, STORAGE, STREAM, ROOT):
+                self._error("This field MUST be 0x00, 0x01, 0x02, or 0x05, "
+                            "depending on the actual type of object. All "
+                            "other values are not valid.")
+            elif self.type == UNALLOCATED:
+                self._error("Can't create Directory Entry for unallocated "
+                            "place.")
 
-        if self.color not in (0x00, 0x01):
-            self._warning("This field MUST be 0x00 (red) or 0x01 (black). "
-                          "All other values are not valid.")
+            if self.color not in (0x00, 0x01):
+                self._warning("This field MUST be 0x00 (red) or 0x01 (black). "
+                              "All other values are not valid.")
 
-        if MAXREGSID < self.left_sibling_id < NOSTREAM:
-            self._warning("This field contains the Stream ID of the left "
-                          "sibling. If there is no left sibling, the field "
-                          "MUST be set to NOSTREAM (0xFFFFFFFF).")
-            self.left_sibling_id = NOSTREAM
-        if MAXREGSID < self.right_sibling_id < NOSTREAM:
-            self._warning("This field contains the Stream ID of the right "
-                          "sibling. If there is no right sibling, the field "
-                          "MUST be set to NOSTREAM (0xFFFFFFFF).")
-            self.right_sibling_id = NOSTREAM
-        if MAXREGSID < self.child_id < NOSTREAM:
-            self._warning("This field contains the Stream ID of a child "
-                          "object. If there is no child object, then the "
-                          "field MUST be set to NOSTREAM (0xFFFFFFFF).")
-            self.child_id = None
+            if MAXREGSID < self.left_sibling_id < NOSTREAM:
+                self._warning("This field contains the Stream ID of the left "
+                              "sibling. If there is no left sibling, the "
+                              "field MUST be set to NOSTREAM (0xFFFFFFFF).")
+                self.left_sibling_id = NOSTREAM
+            if MAXREGSID < self.right_sibling_id < NOSTREAM:
+                self._warning("This field contains the Stream ID of the right "
+                              "sibling. If there is no right sibling, the "
+                              "field MUST be set to NOSTREAM (0xFFFFFFFF).")
+                self.right_sibling_id = NOSTREAM
+            if MAXREGSID < self.child_id < NOSTREAM:
+                self._warning("This field contains the Stream ID of a child "
+                              "object. If there is no child object, then the "
+                              "field MUST be set to NOSTREAM (0xFFFFFFFF).")
+                self.child_id = NOSTREAM
 
-        self.clsid = Guid(clsid)
+            self.clsid = Guid(clsid)
 
-        self.creation_time = from_filetime(creation_time) \
-            if creation_time else None
-        self.modified_time = from_filetime(modified_time) \
-            if modified_time else None
+            self.creation_time = from_filetime(creation_time) \
+                if creation_time else None
+            self.modified_time = from_filetime(modified_time) \
+                if modified_time else None
 
-        if self.source.header.version[0] == 3 and self.size > 0x80000000:
-            self._error("For a version 3 compound file 512-byte sector size, "
-                        "this value of this field MUST be less than or equal "
-                        "to 0x80000000.")
+            if self.source.header.version[0] == 3 and self.size > 0x80000000:
+                self._error("For a version 3 compound file 512-byte sector "
+                            "size, this value of this field MUST be less than "
+                            "or equal to 0x80000000.")
 
-        self._is_mini = self.type != ROOT \
-            and self.size < self.source.header.cutoff_size
+            self._is_mini = self.type != ROOT \
+                and self.size < self.source.header.cutoff_size
 
-        self._position = 0
-        self._position_in_sector = 0
-        self._source_position = self.source.tell()
+            self._position = 0
+            self._position_in_sector = 0
+            self._source_position = self.source.tell()
 
-        self._sector_number = self.sector_start
+            self._sector_number = self.sector_start
 
-        self.next_sector = self.source.next_minifat if self._is_mini \
-            else self.source.next_fat
+            self.next_sector = self.source.next_minifat if self._is_mini \
+                else self.source.next_fat
 
-        self.seek(0)
+            self.seek(0)
+        except UnpackError:
+            self._fatal("Bad Directory Entry header")
 
     def __repr__(self):
-        return '<%s "%s" of %r>' % (
-            self.__class__.__name__, self.name, self.source)
+        return '<%s[%d] "%s" of %r>' % (
+            self.__class__.__name__, self.id, self.name, self.source)
 
     @cached
     def sector_size(self):
