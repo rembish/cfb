@@ -1,4 +1,5 @@
-from io import BytesIO, SEEK_END, SEEK_SET
+from io import BytesIO
+from os import SEEK_END, SEEK_SET
 from unittest import TestCase
 
 from cfb.exceptions import MaybeDefected, ErrorDefect, FatalDefect, \

@@ -102,8 +102,8 @@ class EntryTestCase(TestCase):
             .replace(72, "\xfe\xff\xff\xff")\
             .replace(76, "\xfe\xff\xff\xff")
         me = Entry(3, source, 0)
-        self.assertIsNone(me.left)
-        self.assertIsNone(me.right)
+        self.assertTrue(me.left is None)
+        self.assertTrue(me.right is None)
         self.assertEqual(me.child_id, 0xffffffff)
 
     def test_repr(self):
@@ -118,8 +118,8 @@ class EntryTestCase(TestCase):
         me = io["1Table"]
 
         self.assertEqual(me.next_sector, io.next_minifat)
-        self.assertEqual(me.left, None)
-        self.assertEqual(me.right, None)
+        self.assertTrue(me.left is None)
+        self.assertTrue(me.right is None)
         self.assertRaises(AttributeError, me.__getattribute__, "child")
         self.assertEqual(me.stream, io.root)
 
@@ -134,7 +134,7 @@ class EntryTestCase(TestCase):
         self.assertEqual(io.root, me)
         self.assertEqual(repr(me),
                          '<RootEntry of <CfbIO "%s">>' % self.filename)
-        self.assertIsNone(me.left)
-        self.assertIsNone(me.right)
+        self.assertTrue(me.left is None)
+        self.assertTrue(me.right is None)
         self.assertEqual(me.child, io[1])
 
