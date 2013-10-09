@@ -7,7 +7,7 @@ from cfb import CfbIO
 
 
 class DirectoryTestCase(TestCase):
-    filename = "data/simple.doc"
+    filename = "tests/data/simple.doc"
 
     def setUp(self):
         simplefilter("ignore")
