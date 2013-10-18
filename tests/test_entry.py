@@ -5,7 +5,7 @@ from warnings import simplefilter
 
 from cfb import CfbIO
 from cfb.constants import ENDOFCHAIN
-from cfb.directory.entry import Entry
+from cfb.directory.entry import Entry, SEEK_CUR, SEEK_END
 from cfb.exceptions import MaybeDefected, WarningDefect, FatalDefect, \
     ErrorDefect
 
@@ -143,9 +143,20 @@ class EntryTestCase(TestCase):
         self.assertEqual(me.child, io[1])
 
     def test_io(self):
-        io = CfbIO(self.filename, lazy=False)
-        me = io["WordDocument"]
+        io = CfbIO(self.filename)
+        me = io["\001CompObj"]
 
         self.assertEqual(me.tell(), 0)
         self.assertEqual(me.seek(32), 32)
-        self.assertEqual(me.read(23), "Microsoft Word-Document")
+        self.assertEqual(me.read(23), 'Microsoft Word-Dokument')
+        self.assertEqual(me.tell(), 32 + 23)
+        self.assertEqual(me.seek(5, SEEK_CUR), 32 + 23 + 5)
+        self.assertEqual(me.read(9), 'MSWordDoc')
+        self.assertEqual(me.seek(27, SEEK_END), 16 * 5 - 1)
+        self.assertEqual(me.read(8), 'Document')
+
+        self.assertEqual(me.seek(0), 0)
+        data = me.read()
+        self.assertEqual(me.size, len(data))
+        self.assertTrue('Microsoft Word-Dokument' in data)
+        self.assertEqual(data.find('Microsoft Word-Dokument'), 32)
