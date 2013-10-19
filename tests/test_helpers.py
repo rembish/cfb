@@ -1,4 +1,5 @@
 from datetime import datetime
+from uuid import UUID
 from six import b, BytesIO
 from time import time
 from unittest import TestCase
@@ -32,6 +33,15 @@ class GuidTestCase(TestCase):
     def test_main(self):
         me = Guid('abcdefghijklmnop')
         self.assertEqual(repr(me), '{61626364-6566-6768-696a-6b6c6d6e6f70}')
+
+    def test_eq(self):
+        me = Guid('abcdefghijklmnop')
+        me_too = Guid('abcdefghijklmnop')
+
+        self.assertEqual(me, me_too)
+
+        but_not_me = UUID('61626364-6566-6768-696a-6b6c6d6e6f70')
+        self.assertNotEqual(me, but_not_me)
 
 
 class CachedTestCase(TestCase):

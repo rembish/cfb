@@ -148,15 +148,18 @@ class EntryTestCase(TestCase):
 
         self.assertEqual(me.tell(), 0)
         self.assertEqual(me.seek(32), 32)
-        self.assertEqual(me.read(23), 'Microsoft Word-Dokument')
+        self.assertEqual(me.read(23), b('Microsoft Word-Dokument'))
         self.assertEqual(me.tell(), 32 + 23)
         self.assertEqual(me.seek(5, SEEK_CUR), 32 + 23 + 5)
-        self.assertEqual(me.read(9), 'MSWordDoc')
+        self.assertEqual(me.read(9), b('MSWordDoc'))
         self.assertEqual(me.seek(27, SEEK_END), 16 * 5 - 1)
-        self.assertEqual(me.read(8), 'Document')
+        self.assertEqual(me.read(8), b('Document'))
 
         self.assertEqual(me.seek(0), 0)
         data = me.read()
         self.assertEqual(me.size, len(data))
-        self.assertTrue('Microsoft Word-Dokument' in data)
-        self.assertEqual(data.find('Microsoft Word-Dokument'), 32)
+        self.assertTrue(b('Microsoft Word-Dokument') in data)
+        self.assertEqual(data.find(b('Microsoft Word-Dokument')), 32)
+
+        self.assertEqual(me.seek(1024), 1024)
+        self.assertEqual(me.read(16), b(''))
