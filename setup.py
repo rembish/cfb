@@ -18,7 +18,7 @@ setup(
     long_description=readme,
     install_requires=['six'],
     test_suite='tests',
-    package_data={"tests": ["data/*.doc"]},
+    package_data={"tests": ["data/*.doc", "data/*.xls"]},
     classifiers=(
         'Development Status :: 3 - Alpha',
         'Intended Audience :: Developers',

@@ -1,3 +1,4 @@
 include *.txt
 include *.rst
 recursive-include tests/data *.doc
+recursive-include tests/data *.xls

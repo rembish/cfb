@@ -163,3 +163,23 @@ class EntryTestCase(TestCase):
 
         self.assertEqual(me.seek(1024), 1024)
         self.assertEqual(me.read(16), b(''))
+
+    def test_bigger(self):
+        from hexdump import hexdump
+        io = CfbIO('tests/data/days2.xls', lazy=True)
+        me = io['Workbook']
+
+        import OleFileIO_PL
+        #   OleFileIO_PL.set_debug_mode(True)
+        ole = OleFileIO_PL.OleFileIO('tests/data/days2.xls')
+        print list(io.difat)
+
+        for i, d in enumerate(io.difat):
+            print '#6h' %d,
+            if not i % 4:
+                break
+
+        me2 = ole.openstream('Workbook')
+        #me.read()
+        print me2.read() == me.read()
+        #hexdump(me2.read())

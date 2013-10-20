@@ -3,7 +3,7 @@ from io import FileIO
 from os import fstat
 from six import string_types
 
-from cfb.constants import ENDOFCHAIN
+from cfb.constants import ENDOFCHAIN, NOSTREAM
 from cfb.directory import Directory
 from cfb.directory.entry import RootEntry
 from cfb.exceptions import MaybeDefected, ErrorDefect
@@ -52,8 +52,7 @@ class CfbIO(FileIO, MaybeDefected, ByteHelpers):
         if block >= 109:
             block -= 109
             sector = self.header.difat_sector_start
-
-            while block >= sector_size:
+            while block >= sector_size and sector != ENDOFCHAIN:
                 position = (sector + 1) << self.header.sector_shift
                 position += self.header.sector_size - 4
                 sector = self.get_long(position)
@@ -99,3 +98,18 @@ class CfbIO(FileIO, MaybeDefected, ByteHelpers):
 
     def __repr__(self):
         return '<%s "%s">' % (self.__class__.__name__, self.name)
+
+    @cached
+    def difat(self):
+        for i in xrange(109):
+            yield self.get_long(76 + 4 * i)
+
+        sector = self.header.difat_sector_start
+        for _ in range(self.header.difat_sector_count):
+            position = (sector + 1) << self.header.sector_shift
+            for i in xrange(self.header.sector_size // 4 - 1):
+                yield self.get_long(position + 4 * i)
+            sector = self.get_long(self.tell())
+
+        if sector not in [ENDOFCHAIN, NOSTREAM]:
+            self._error('Abnormal DIFAT end')
