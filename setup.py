@@ -8,7 +8,7 @@ readme = open(join(here, 'README.rst'), 'rt').read()
 
 setup(
     name='cfb',
-    version='0.8.2',
+    version='0.8.3',
     packages=find_packages(),
     url='https://github.com/rembish/cfb',
     license='BSD 2-Clause license',
