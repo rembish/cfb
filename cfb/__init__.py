@@ -76,7 +76,7 @@ class CfbIO(FileIO, MaybeDefected, ByteHelpers):
         sector_size = self.header.sector_size // 4
         sector = self.header.minifat_sector_start
 
-        while sector != ENDOFCHAIN and (current + 1) * sector_size <= current:
+        while sector != ENDOFCHAIN and (position + 1) * sector_size <= current:
             sector = self.next_fat(sector)
             position += 1
 
