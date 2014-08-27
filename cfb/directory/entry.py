@@ -153,7 +153,10 @@ class Entry(MaybeDefected, ByteHelpers):
         Reads `size` bytes from current directory entry. If `size` is empty,
         it'll read all data till entry's end.
         """
-        self.source.seek(self._source_position)
+        if self._is_mini:
+            self.seek(self._position)
+        else:
+            self.source.seek(self._source_position)
         if not size or size < 0:
             size = self.size - self.tell()
 
