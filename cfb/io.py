@@ -1,7 +1,6 @@
 """CfbIO — the primary entry point for reading CFB files."""
 
-from __future__ import annotations
-
+from functools import cached_property
 from io import FileIO
 from os import fstat
 from pathlib import Path
@@ -12,7 +11,7 @@ from .directory import Directory
 from .directory.entry import Entry, RootEntry
 from .exceptions import ErrorDefect, MaybeDefected
 from .header import Header
-from .helpers import ByteHelpers, cached_property
+from .helpers import ByteHelpers
 
 __all__ = ["CfbIO"]
 

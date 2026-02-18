@@ -1,11 +1,8 @@
 """Utility classes and helpers for internal use only."""
 
-from __future__ import annotations
-
 from datetime import datetime, timedelta
 
-__all__ = ["ByteHelpers", "Guid", "cached_property", "from_filetime"]
-from functools import cached_property as cached_property  # re-exported
+__all__ = ["ByteHelpers", "Guid", "from_filetime"]
 from os import SEEK_SET
 from struct import unpack
 from uuid import UUID

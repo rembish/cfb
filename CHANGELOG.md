@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.9.2 (2026-02-18)
+
+- Fix off-by-one in `Entry.seek()` at exact sector boundaries (`<` → `<=`)
+- Remove `cached_property` re-export from `cfb.helpers`; use `functools.cached_property` directly
+- Drop `from __future__ import annotations` from `helpers.py`, `entry.py`, and `io.py`
+- Modernise test suite: centralise fixtures in `conftest.py`, split test files by topic, drop class-based grouping, add `@pytest.mark.parametrize` for sibling-ID cases
+
 ## 0.9.1 (2026-02-18)
 
 - Fix `from_filetime` crashing on out-of-range FILETIME values (pre-1970 dates,

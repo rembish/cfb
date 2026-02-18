@@ -1,3 +1,5 @@
+"""Tests for cfb.header (Header validation)."""
+
 from io import BytesIO
 from os import SEEK_END, SEEK_SET
 

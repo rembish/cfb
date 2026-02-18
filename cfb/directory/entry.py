@@ -1,9 +1,8 @@
 """CFB directory entry structures."""
 
-from __future__ import annotations
-
 from collections.abc import Callable
 from datetime import datetime
+from functools import cached_property
 from os import SEEK_CUR, SEEK_END, SEEK_SET
 from re import UNICODE, search
 from struct import error as UnpackError
@@ -20,7 +19,7 @@ from ..constants import (
     UNALLOCATED,
 )
 from ..exceptions import MaybeDefected
-from ..helpers import ByteHelpers, Guid, cached_property, from_filetime
+from ..helpers import ByteHelpers, Guid, from_filetime
 
 if TYPE_CHECKING:
     from ..io import CfbIO
@@ -31,7 +30,7 @@ __all__ = ["SEEK_CUR", "SEEK_END", "SEEK_SET", "Entry", "RootEntry"]
 class Entry(MaybeDefected, ByteHelpers):
     """File-like object providing access to a single CFB directory entry stream."""
 
-    def __init__(self, entry_id: int, source: CfbIO, position: int) -> None:
+    def __init__(self, entry_id: int, source: "CfbIO", position: int) -> None:
         super().__init__(source.minimum_defect)
 
         self.id = entry_id
@@ -150,7 +149,7 @@ class Entry(MaybeDefected, ByteHelpers):
         return header.mini_sector_shift if self._is_mini else header.sector_shift
 
     @cached_property
-    def left(self) -> Entry | None:
+    def left(self) -> "Entry | None":
         """Left sibling entry, or ``None`` if absent."""
         return (
             self.source.directory[self.left_sibling_id]
@@ -159,7 +158,7 @@ class Entry(MaybeDefected, ByteHelpers):
         )
 
     @cached_property
-    def right(self) -> Entry | None:
+    def right(self) -> "Entry | None":
         """Right sibling entry, or ``None`` if absent."""
         return (
             self.source.directory[self.right_sibling_id]
@@ -168,7 +167,7 @@ class Entry(MaybeDefected, ByteHelpers):
         )
 
     @cached_property
-    def stream(self) -> CfbIO | RootEntry:
+    def stream(self) -> "CfbIO | RootEntry":
         """Data source for this entry.
 
         Mini-stream entries read from the root entry; others read directly
@@ -232,7 +231,7 @@ class Entry(MaybeDefected, ByteHelpers):
 
         while (
             self._sector_number != ENDOFCHAIN
-            and (current + 1) * self.sector_size < offset
+            and (current + 1) * self.sector_size <= offset
         ):
             self._sector_number = self.next_sector(self._sector_number)
             current += 1
@@ -254,7 +253,7 @@ class Entry(MaybeDefected, ByteHelpers):
 class RootEntry(Entry):
     """The root directory entry; has a single child and no siblings."""
 
-    def __init__(self, source: CfbIO, position: int) -> None:
+    def __init__(self, source: "CfbIO", position: int) -> None:
         super().__init__(0, source, position)
 
     @cached_property
