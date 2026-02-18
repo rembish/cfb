@@ -1,0 +1,68 @@
+[build-system]
+requires = ["setuptools>=61", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "cfb"
+version = "0.9.0"
+description = "Microsoft Compound File Binary File Format IO"
+readme = "README.md"
+license = { text = "BSD-2-Clause" }
+authors = [{ name = "Alex Rembish", email = "alex@rembish.org" }]
+requires-python = ">=3.12"
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: BSD License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Software Development :: Libraries",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Text Processing",
+]
+dependencies = []
+
+[project.urls]
+Homepage = "https://github.com/rembish/cfb"
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8",
+    "pytest-cov",
+    "black>=24",
+    "ruff>=0.4",
+    "mypy>=1.10",
+    "pre-commit>=3",
+]
+
+[tool.setuptools.packages.find]
+include = ["cfb*"]
+
+[tool.setuptools.package-data]
+"cfb" = ["py.typed"]
+"tests" = ["data/*.doc"]
+
+[tool.black]
+line-length = 88
+target-version = ["py312"]
+
+[tool.ruff]
+line-length = 88
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "N", "UP", "B", "C4", "SIM", "RUF"]
+ignore = [
+    "N802",   # function name should be lowercase — kept for ByteHelpers abstract stubs
+    "N812",   # lowercase imported as non-lowercase — struct.error → UnpackError is idiomatic
+    "N818",   # exception names with Error suffix — CfbDefect is intentional public API
+]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

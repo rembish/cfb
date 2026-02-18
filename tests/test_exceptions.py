@@ -1,14 +1,24 @@
-from unittest import TestCase
-from warnings import simplefilter
-from cfb.exceptions import MaybeDefected, ErrorDefect, FatalDefect
+import warnings
+
+import pytest
+
+from cfb.exceptions import ErrorDefect, FatalDefect, MaybeDefected
 
 
-class MaybeDefectedTestCase(TestCase):
-    def test_main(self):
-        me = MaybeDefected(raise_if=ErrorDefect)
+class TestMaybeDefected:
+    def test_fatal_always_raises(self) -> None:
+        defected = MaybeDefected(raise_if=ErrorDefect)
+        with pytest.raises(FatalDefect):
+            defected._fatal("Fatal!")
 
-        self.assertRaises(FatalDefect, me._fatal, "Fatal!")
-        self.assertRaises(ErrorDefect, me._error, "Error!")
+    def test_error_raises_at_threshold(self) -> None:
+        defected = MaybeDefected(raise_if=ErrorDefect)
+        with pytest.raises(ErrorDefect):
+            defected._error("Error!")
 
-        simplefilter("error")
-        self.assertRaises(SyntaxWarning, me._warning, "Warning!")
+    def test_warning_below_threshold_warns(self) -> None:
+        defected = MaybeDefected(raise_if=ErrorDefect)
+        with warnings.catch_warnings():
+            warnings.simplefilter("error")
+            with pytest.raises(SyntaxWarning):
+                defected._warning("Warning!")

@@ -1,81 +1,84 @@
-from datetime import datetime
-from uuid import UUID
-from six import b, BytesIO
+from datetime import UTC, datetime
+from functools import cached_property
+from io import BytesIO
 from time import time
-from unittest import TestCase
+from uuid import UUID
 
-from cfb.helpers import ByteHelpers, Guid, cached, from_filetime
+import pytest
+
+from cfb.helpers import ByteHelpers, Guid, from_filetime
 
 
-class ByteHelpersTestCase(TestCase):
-    def test_no_subclass(self):
-        me = ByteHelpers()
+class TestByteHelpers:
+    def test_not_implemented(self) -> None:
+        helper = ByteHelpers()
 
-        self.assertRaises(NotImplementedError, me.read)
-        self.assertRaises(NotImplementedError, me.get_byte, 0)
-        self.assertRaises(NotImplementedError, me.get_short, 1)
-        self.assertRaises(NotImplementedError, me.get_long, 10)
+        with pytest.raises(NotImplementedError):
+            helper.read()
+        with pytest.raises(NotImplementedError):
+            helper.get_byte(0)
+        with pytest.raises(NotImplementedError):
+            helper.get_short(1)
+        with pytest.raises(NotImplementedError):
+            helper.get_long(10)
 
-    def test_subclass(self):
-        class Foo(BytesIO, ByteHelpers):
+    def test_subclass(self) -> None:
+        class ConcreteHelper(BytesIO, ByteHelpers):
             pass
 
-        me = Foo(b('Compound Binary Format'))
+        helper = ConcreteHelper(b"Compound Binary Format")
 
-        self.assertEqual(me.get_byte(0), ord('C'))
-        self.assertEqual(me.get_short(3), ord('o') * 256 + ord('p'))
-        self.assertEqual(me.get_long(9),
-                         ord('a') * 256 ** 3 + ord('n') * 256 ** 2 +
-                         ord('i') * 256 + ord('B'))
-
-
-class GuidTestCase(TestCase):
-    def test_main(self):
-        me = Guid('abcdefghijklmnop')
-        self.assertEqual(repr(me), '{61626364-6566-6768-696a-6b6c6d6e6f70}')
-
-    def test_eq(self):
-        me = Guid('abcdefghijklmnop')
-        me_too = Guid('abcdefghijklmnop')
-
-        self.assertEqual(me, me_too)
-
-        but_not_me = UUID('61626364-6566-6768-696a-6b6c6d6e6f70')
-        self.assertNotEqual(me, but_not_me)
+        assert helper.get_byte(0) == ord("C")
+        assert helper.get_short(3) == ord("o") * 256 + ord("p")
+        assert helper.get_long(9) == (
+            ord("a") * 256**3 + ord("n") * 256**2 + ord("i") * 256 + ord("B")
+        )
 
 
-class CachedTestCase(TestCase):
-    def test_main(self):
-        class Foo(object):
-            def __init__(self):
-                self.x = 0
+class TestGuid:
+    def test_repr(self) -> None:
+        guid = Guid("abcdefghijklmnop")
+        assert repr(guid) == "{61626364-6566-6768-696a-6b6c6d6e6f70}"
 
-            @cached
-            def bar(self):
-                self.x += 1
-                return self.x
+    def test_eq_same_class(self) -> None:
+        a = Guid("abcdefghijklmnop")
+        b = Guid("abcdefghijklmnop")
+        assert a == b
 
-        me = Foo()
-        self.assertEqual(me.bar, 1)
-        self.assertEqual(me.bar, 1)
-        self.assertEqual(me.x, 1)
+    def test_ne_different_class(self) -> None:
+        guid = Guid("abcdefghijklmnop")
+        uuid = UUID("61626364-6566-6768-696a-6b6c6d6e6f70")
+        assert guid != uuid
 
 
-class FiletimeTestCase(TestCase):
-    def test_main(self):
-        self.assertEqual(from_filetime(116444736000000000),
-                         datetime(1970, 1, 1))
+class TestCachedProperty:
+    def test_computed_once(self) -> None:
+        class Counter:
+            def __init__(self) -> None:
+                self.calls = 0
+
+            @cached_property
+            def value(self) -> int:
+                self.calls += 1
+                return self.calls
+
+        obj = Counter()
+        assert obj.value == 1
+        assert obj.value == 1  # second access — should not recompute
+        assert obj.calls == 1
+
+
+class TestFromFiletime:
+    def test_unix_epoch(self) -> None:
+        assert from_filetime(116444736000000000) == datetime(1970, 1, 1)
+
+    def test_current_time(self) -> None:
 
         current = time()
-        filetime = current * 10000000 + 116444736000000000
-        a = from_filetime(filetime)
-        b = datetime.utcfromtimestamp(current)
+        filetime = int(current * 10000000 + 116444736000000000)
+        converted = from_filetime(filetime)
+        reference = datetime.fromtimestamp(current, tz=UTC).replace(tzinfo=None)
 
-        try:
-            self.assertEqual(a, b)
-        except AssertionError:
-            # TODO Retest one microsecond leaking. Maybe bug.
-            if (a - b).microseconds == 1 or (b - a).microseconds == 1:
-                pass
-            else:
-                raise
+        delta = abs((converted - reference).total_seconds())
+        # Allow at most one microsecond of rounding error.
+        assert delta <= 0.000001

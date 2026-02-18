@@ -1,13 +1,25 @@
-""" Internal CFB constants """
-from cfb.helpers import Guid
+"""Internal CFB format constants."""
 
-MAXREGSID = 0xfffffffa
-ENDOFCHAIN = 0xfffffffe
-NOSTREAM = 0xffffffff
+from .helpers import Guid
+
+__all__ = [
+    "ENDOFCHAIN",
+    "GUID_NULL",
+    "MAXREGSID",
+    "NOSTREAM",
+    "ROOT",
+    "STORAGE",
+    "STREAM",
+    "UNALLOCATED",
+]
+
+MAXREGSID = 0xFFFFFFFA
+ENDOFCHAIN = 0xFFFFFFFE
+NOSTREAM = 0xFFFFFFFF
 
 UNALLOCATED = 0x00
 STORAGE = 0x01
 STREAM = 0x02
 ROOT = 0x05
 
-GUID_NULL = Guid('\0' * 16)
+GUID_NULL = Guid(b"\x00" * 16)
