@@ -1,6 +1,6 @@
 """Tests for cfb.helpers.from_filetime."""
 
-from datetime import UTC, datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from time import time
 
 from cfb.helpers import from_filetime
@@ -35,7 +35,7 @@ def test_current_time() -> None:
     filetime = int(current * 10000000 + 116444736000000000)
     converted = from_filetime(filetime)
     assert converted is not None
-    reference = datetime.fromtimestamp(current, tz=UTC).replace(tzinfo=None)
+    reference = datetime.fromtimestamp(current, tz=timezone.utc).replace(tzinfo=None)
 
     delta = abs((converted - reference).total_seconds())
     # Allow at most one microsecond of rounding error.

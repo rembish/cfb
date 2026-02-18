@@ -1,5 +1,7 @@
 """Shared pytest fixtures for cfb tests."""
 
+from __future__ import annotations
+
 import warnings
 from collections.abc import Iterator
 
