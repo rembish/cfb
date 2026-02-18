@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.9.1 (2026-02-18)
+
+- Fix `from_filetime` crashing on out-of-range FILETIME values (pre-1970 dates,
+  garbage timestamps); use `timedelta` arithmetic instead of `datetime.fromtimestamp`
+- `from_filetime` now returns `None` for zero ("not set") and unrepresentable values
+
 ## 0.9.0 (2026-02-18)
 
 - Drop Python 2 support; require Python ≥ 3.12

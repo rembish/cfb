@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import UTC, datetime
+from datetime import datetime, timedelta
 
 __all__ = ["ByteHelpers", "Guid", "cached_property", "from_filetime"]
 from functools import cached_property as cached_property  # re-exported
@@ -58,13 +58,19 @@ class Guid(UUID):
     __hash__ = UUID.__hash__
 
 
-def from_filetime(time: int) -> datetime:
+_FILETIME_EPOCH = datetime(1601, 1, 1)
+
+
+def from_filetime(time: int) -> datetime | None:
     """Convert a Microsoft OLE FILETIME value to a naive UTC datetime.
 
     FILETIME counts 100-nanosecond intervals since January 1, 1601.
-    ``116444736000000000`` corresponds to January 1, 1970 (Unix epoch).
+    Returns ``None`` for a zero value (meaning "not set") or any value that
+    falls outside the representable datetime range.
     """
-
-    return datetime.fromtimestamp(
-        (time - 116444736000000000) / 10000000.0, tz=UTC
-    ).replace(tzinfo=None)
+    if not time:
+        return None
+    try:
+        return _FILETIME_EPOCH + timedelta(microseconds=time // 10)
+    except (OverflowError, ValueError):
+        return None

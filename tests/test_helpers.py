@@ -1,4 +1,4 @@
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from functools import cached_property
 from io import BytesIO
 from time import time
@@ -72,11 +72,28 @@ class TestFromFiletime:
     def test_unix_epoch(self) -> None:
         assert from_filetime(116444736000000000) == datetime(1970, 1, 1)
 
+    def test_filetime_epoch(self) -> None:
+        # FILETIME tick 1 (100 ns) → 1601-01-01 00:00:00
+        assert from_filetime(1) == datetime(1601, 1, 1)
+
+    def test_zero_returns_none(self) -> None:
+        assert from_filetime(0) is None
+
+    def test_out_of_range_returns_none(self) -> None:
+        # A value far beyond year 9999 must not raise.
+        assert from_filetime(2**63 - 1) is None
+
+    def test_pre_epoch_date(self) -> None:
+        # A date before the Unix epoch (1601) must not raise.
+        filetime = 100_000_000  # 10 seconds after FILETIME epoch
+        assert from_filetime(filetime) == datetime(1601, 1, 1) + timedelta(seconds=10)
+
     def test_current_time(self) -> None:
 
         current = time()
         filetime = int(current * 10000000 + 116444736000000000)
         converted = from_filetime(filetime)
+        assert converted is not None
         reference = datetime.fromtimestamp(current, tz=UTC).replace(tzinfo=None)
 
         delta = abs((converted - reference).total_seconds())

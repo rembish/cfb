@@ -104,12 +104,8 @@ class Entry(MaybeDefected, ByteHelpers):
 
             self.clsid = Guid(clsid)
 
-            self.creation_time: datetime | None = (
-                from_filetime(creation_time) if creation_time else None
-            )
-            self.modified_time: datetime | None = (
-                from_filetime(modified_time) if modified_time else None
-            )
+            self.creation_time: datetime | None = from_filetime(creation_time)
+            self.modified_time: datetime | None = from_filetime(modified_time)
 
             if self.source.header.version[0] == 3 and self.size > 0x80000000:
                 self._error(
