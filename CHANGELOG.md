@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.9.3 (2026-02-18)
+
+- Lower `requires-python` to `>=3.8`; add `typing_extensions` runtime dependency
+- Add `from __future__ import annotations` to `io.py`, `helpers.py`, and `entry.py`
+- Switch `from typing import Self` to `from typing_extensions import Self` in `io.py`
+- Use `typing.Dict` as base class in `Directory` (replaces `dict[int, Entry]`, which is not subscriptable at runtime on Python 3.8)
+- Expand CI matrix to Python 3.8, 3.10, 3.12, 3.13; split lint and test jobs
+- Add `tox.ini` and `make tox` target for local multi-version testing
+
 ## 0.9.2 (2026-02-18)
 
 - Fix off-by-one in `Entry.seek()` at exact sector boundaries (`<` → `<=`)

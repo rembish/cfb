@@ -4,24 +4,28 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "cfb"
-version = "0.9.2"
+version = "0.9.3"
 description = "Microsoft Compound File Binary File Format IO"
 readme = "README.md"
 license = { text = "BSD-2-Clause" }
 authors = [{ name = "Alex Rembish", email = "alex@rembish.org" }]
-requires-python = ">=3.12"
+requires-python = ">=3.8"
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",
     "License :: OSI Approved :: BSD License",
     "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
     "Topic :: Software Development :: Libraries",
     "Topic :: Software Development :: Libraries :: Python Modules",
     "Topic :: Text Processing",
 ]
-dependencies = []
+dependencies = ["typing_extensions"]
 
 [project.urls]
 Homepage = "https://github.com/rembish/cfb"
@@ -34,6 +38,7 @@ dev = [
     "ruff>=0.4",
     "mypy>=1.10",
     "pre-commit>=3",
+    "tox>=4",
 ]
 
 [tool.setuptools.packages.find]
@@ -45,11 +50,11 @@ include = ["cfb*"]
 
 [tool.black]
 line-length = 88
-target-version = ["py312"]
+target-version = ["py38"]
 
 [tool.ruff]
 line-length = 88
-target-version = "py312"
+target-version = "py38"
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "N", "UP", "B", "C4", "SIM", "RUF"]
@@ -60,7 +65,7 @@ ignore = [
 ]
 
 [tool.mypy]
-python_version = "3.12"
+python_version = "3.8"
 strict = true
 ignore_missing_imports = true
 

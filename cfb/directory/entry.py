@@ -1,5 +1,7 @@
 """CFB directory entry structures."""
 
+from __future__ import annotations
+
 from collections.abc import Callable
 from datetime import datetime
 from functools import cached_property
@@ -30,7 +32,7 @@ __all__ = ["SEEK_CUR", "SEEK_END", "SEEK_SET", "Entry", "RootEntry"]
 class Entry(MaybeDefected, ByteHelpers):
     """File-like object providing access to a single CFB directory entry stream."""
 
-    def __init__(self, entry_id: int, source: "CfbIO", position: int) -> None:
+    def __init__(self, entry_id: int, source: CfbIO, position: int) -> None:
         super().__init__(source.minimum_defect)
 
         self.id = entry_id
@@ -149,7 +151,7 @@ class Entry(MaybeDefected, ByteHelpers):
         return header.mini_sector_shift if self._is_mini else header.sector_shift
 
     @cached_property
-    def left(self) -> "Entry | None":
+    def left(self) -> Entry | None:
         """Left sibling entry, or ``None`` if absent."""
         return (
             self.source.directory[self.left_sibling_id]
@@ -158,7 +160,7 @@ class Entry(MaybeDefected, ByteHelpers):
         )
 
     @cached_property
-    def right(self) -> "Entry | None":
+    def right(self) -> Entry | None:
         """Right sibling entry, or ``None`` if absent."""
         return (
             self.source.directory[self.right_sibling_id]
@@ -167,7 +169,7 @@ class Entry(MaybeDefected, ByteHelpers):
         )
 
     @cached_property
-    def stream(self) -> "CfbIO | RootEntry":
+    def stream(self) -> CfbIO | RootEntry:
         """Data source for this entry.
 
         Mini-stream entries read from the root entry; others read directly
@@ -253,7 +255,7 @@ class Entry(MaybeDefected, ByteHelpers):
 class RootEntry(Entry):
     """The root directory entry; has a single child and no siblings."""
 
-    def __init__(self, source: "CfbIO", position: int) -> None:
+    def __init__(self, source: CfbIO, position: int) -> None:
         super().__init__(0, source, position)
 
     @cached_property

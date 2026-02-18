@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, cast
+from typing import TYPE_CHECKING, Dict, cast
 
 __all__ = ["Directory"]
 
@@ -14,7 +14,7 @@ if TYPE_CHECKING:
     from ..io import CfbIO
 
 
-class Directory(dict[int, Entry]):
+class Directory(Dict[int, Entry]):
     """Dictionary-based accessor for the internal CFB directory structure."""
 
     def __init__(self, source: CfbIO) -> None:

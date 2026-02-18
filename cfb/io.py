@@ -1,10 +1,13 @@
 """CfbIO — the primary entry point for reading CFB files."""
 
+from __future__ import annotations
+
 from functools import cached_property
 from io import FileIO
 from os import fstat
 from pathlib import Path
-from typing import Self
+
+from typing_extensions import Self
 
 from .constants import ENDOFCHAIN
 from .directory import Directory

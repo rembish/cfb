@@ -1,5 +1,7 @@
 """Utility classes and helpers for internal use only."""
 
+from __future__ import annotations
+
 from datetime import datetime, timedelta
 
 __all__ = ["ByteHelpers", "Guid", "from_filetime"]
