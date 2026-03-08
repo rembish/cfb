@@ -5,15 +5,13 @@ Read-only access to Microsoft Compound File Binary (CFB/OLE2) files from Python.
 ## Installation
 
 ```bash
-python3 -m venv .venv
-source .venv/bin/activate
-pip install -e ".[dev]"
+pip install cfb
 ```
 
-Or use the Makefile:
+### Development
 
 ```bash
-make install
+make install     # create .venv and install with dev dependencies
 ```
 
 ## Usage

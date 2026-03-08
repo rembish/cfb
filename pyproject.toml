@@ -7,13 +7,12 @@ name = "cfb"
 version = "0.9.3"
 description = "Microsoft Compound File Binary File Format IO"
 readme = "README.md"
-license = { text = "BSD-2-Clause" }
+license = "BSD-2-Clause"
 authors = [{ name = "Alex Rembish", email = "alex@rembish.org" }]
 requires-python = ">=3.8"
 classifiers = [
-    "Development Status :: 3 - Alpha",
+    "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
-    "License :: OSI Approved :: BSD License",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
@@ -29,6 +28,9 @@ dependencies = ["typing_extensions"]
 
 [project.urls]
 Homepage = "https://github.com/rembish/cfb"
+Repository = "https://github.com/rembish/cfb"
+Changelog = "https://github.com/rembish/cfb/blob/master/CHANGELOG.md"
+Issues = "https://github.com/rembish/cfb/issues"
 
 [project.optional-dependencies]
 dev = [
@@ -39,6 +41,8 @@ dev = [
     "mypy>=1.10",
     "pre-commit>=3",
     "tox>=4",
+    "build>=1",
+    "twine>=5",
 ]
 
 [tool.setuptools.packages.find]
